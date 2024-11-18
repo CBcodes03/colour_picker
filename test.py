@@ -4,12 +4,9 @@ import pyautogui
 import tkinter as tk
 from pynput import mouse, keyboard
 import sys
+import pyperclip
 
 pallete=[]
-root = tk.Tk()
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-root.withdraw()
 
 def get_color_from_screen(x, y):
     global pallete
@@ -20,14 +17,13 @@ def get_color_from_screen(x, y):
     pallete.append(hex_color)
     return color_rgb, hex_color
 
-def on_press(key, mouse_listener):
+def on_press(key):
     try:
-        if key.page_down:
-            mouse_listener.stop()
-            pyautogui.alert(text=pallete)
+        if key==keyboard.Key.page_down:
+            pyperclip.copy(pallete)
             sys.exit()
-        elif key.esc:
-            main()  # Restart main listener
+        elif key==keyboard.Key.esc:
+            main()  # calling main function Restart main listener
     except AttributeError:
         pass
 
@@ -38,11 +34,11 @@ def on_click(x, y, button, pressed, mouse_listener):
             print(f"RGB: {color_rgb}, Hex: {hex_color}")
         elif button == mouse.Button.right:
             mouse_listener.stop()
-            with keyboard.Listener(on_press=lambda key: on_press(key, mouse_listener)) as key_listener:
+            with keyboard.Listener(on_press=on_press) as key_listener:
                 key_listener.join()
 
 def main():
-    print("Left click anywhere on the screen to get the color, right click to pause, and press 'page_down' to exit page_up to restar")
+    print("Left click anywhere on the screen to get the color, right click to pause (after pause press 'page_down' to exit and 'exc' to restart!)")
     with mouse.Listener(on_click=lambda x, y, button, pressed: on_click(x, y, button, pressed, mouse.Listener(on_click=on_click))) as listener:
         listener._on_click = lambda x, y, button, pressed: on_click(x, y, button, pressed, listener)
         listener.join()
